@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Корзина | Sneakers Shop</title>
+    <style>
+        /* Стили остаются прежними */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #e74c3c;
+            text-decoration: none;
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 20px;
+        }
+        
+        nav a {
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        nav a:hover {
+            color: #e74c3c;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .auth-link, .cart-link {
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .auth-link:hover, .cart-link:hover {
+            color: #e74c3c;
+        }
+        
+        .cart {
+            margin: 40px 0;
+        }
+        
+        .page-title {
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 32px;
+        }
+        
+        .cart-items {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .cart-item {
+            display: grid;
+            grid-template-columns: 100px 2fr 1fr 1fr 40px;
+            gap: 20px;
+            align-items: center;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+        }
+        
+        .cart-item-image {
+            width: 100px;
+            height: 100px;
+            overflow: hidden;
+            border-radius: 4px;
+        }
+        
+        .cart-item-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .cart-item-title {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+        
+        .cart-item-price, .cart-item-total {
+            font-weight: bold;
+        }
+        
+        .cart-item-quantity {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .quantity-btn {
+            width: 25px;
+            height: 25px;
+            border: 1px solid #ddd;
+            background-color: transparent;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .quantity-btn:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .cart-item-remove {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #95a5a6;
+        }
+        
+        .cart-item-remove:hover {
+            color: #e74c3c;
+        }
+        
+        .empty-cart {
+            text-align: center;
+            padding: 40px;
+            background-color: white;
+            border-radius: 8px;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 25px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        
+        .btn-primary {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #c0392b;
+        }
+        
+        .cart-total {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+        }
+        
+        .total-amount {
+            font-size: 24px;
+            font-weight: bold;
+            color: #e74c3c;
+            margin: 10px 0;
+        }
+        
+        .error-message {
+            color: #e74c3c;
+            text-align: center;
+            padding: 20px;
+            background-color: #ffeaea;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .auth-required {
+            text-align: center;
+            padding: 40px;
+            background-color: white;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-inner">
+                <a href="index.html" class="logo">SNEAKERS</a>
+                <nav>
+                    <ul>
+                        <li><a href="catalog.html">Каталог</a></li>
+                        <li><a href="about.html">О нас</a></li>
+                        <li><a href="contacts.html">Контакты</a></li>
+                    </ul>
+                </nav>
+                <div class="header-actions">
+                    <a href="login.html" class="auth-link" id="authLink">Войти</a>
+                    <a href="cart.html" class="cart-link">Корзина (<span id="cartCount">0</span>)</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="cart">
+            <div class="container">
+                <h1 class="page-title">Ваша корзина</h1>
+                
+                <div id="cartContainer">
+                    <div class="loading">Загрузка корзины...</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const API_BASE_URL = 'https://localhost:7154';
+
+        // Улучшенная функция для API запросов
+        async function apiRequest(url, options = {}) {
+            try {
+                const response = await fetch(`${API_BASE_URL}${url}`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                });
+                
+                if (!response.ok) {
+                    let errorMessage = `HTTP error! status: ${response.status}`;
+                    try {
+                        const errorData = await response.json();
+                        errorMessage = errorData.message || errorMessage;
+                    } catch (e) {
+                        const errorText = await response.text();
+                        errorMessage = errorText || errorMessage;
+                    }
+                    throw new Error(errorMessage);
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error('API Request failed:', error);
+                throw error;
+            }
+        }
+
+        // Функция для авторизованных запросов с обработкой 401
+        async function authApiRequest(url, options = {}) {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                // Если токена нет, перенаправляем на страницу входа
+                window.location.href = 'login.html';
+                throw new Error('No authentication token');
+            }
+            
+            try {
+                return await apiRequest(url, {
+                    ...options,
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        ...options.headers
+                    }
+                });
+            } catch (error) {
+                // Если ошибка 401 (Unauthorized), очищаем localStorage и перенаправляем
+                if (error.message.includes('401')) {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    window.location.href = 'login.html';
+                }
+                throw error;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            const token = localStorage.getItem('token');
+            const authLink = document.getElementById('authLink');
+            
+            if (!token) {
+                // Если пользователь не авторизован, показываем сообщение
+                document.getElementById('cartContainer').innerHTML = `
+                    <div class="auth-required">
+                        <h3>Требуется авторизация</h3>
+                        <p>Для просмотра корзины необходимо войти в систему</p>
+                        <a href="login.html" class="btn btn-primary" style="margin-top: 20px; display: inline-block;">Войти</a>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Обновляем информацию о пользователе в хедере
+            try {
+                const user = JSON.parse(localStorage.getItem('user'));
+                authLink.textContent = user.name;
+                authLink.href = '#';
+            } catch (error) {
+                console.error('Error parsing user data:', error);
+            }
+            
+            // Загрузка корзины
+            async function loadCart() {
+                try {
+                    const cart = await authApiRequest('/api/cart');
+                    document.getElementById('cartCount').textContent = cart.length;
+                    
+                    const cartContainer = document.getElementById('cartContainer');
+                    
+                    if (cart.length === 0) {
+                        cartContainer.innerHTML = `
+                            <div class="empty-cart">
+                                <h3>Ваша корзина пуста</h3>
+                                <p>Перейдите в каталог, чтобы добавить товары</p>
+                                <a href="catalog.html" class="btn btn-primary" style="margin-top: 20px; display: inline-block;">Перейти в каталог</a>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    const total = cart.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
+                    
+                    cartContainer.innerHTML = `
+                        <div class="cart-items" id="cartItems">
+                            ${cart.map(item => `
+                                <div class="cart-item" data-id="${item.id}">
+                                    <div class="cart-item-image">
+                                        <img src="${item.product.imageUrl}" alt="${item.product.name}" onerror="this.src='https://via.placeholder.com/100x100?text=No+Image'">
+                                    </div>
+                                    <div class="cart-item-info">
+                                        <h3 class="cart-item-title">${item.product.name}</h3>
+                                        <div class="cart-item-brand">${item.product.brand}</div>
+                                    </div>
+                                    <div class="cart-item-price">${item.product.price.toLocaleString()} ₽</div>
+                                    <div class="cart-item-quantity">
+                                        <span class="quantity">${item.quantity} шт.</span>
+                                    </div>
+                                    <button class="cart-item-remove">&times;</button>
+                                </div>
+                            `).join('')}
+                        </div>
+                        
+                        <div class="cart-total">
+                            <div>Общая сумма:</div>
+                            <div class="total-amount">${total.toLocaleString()} ₽</div>
+                            <button class="btn btn-primary" style="padding: 15px 30px; font-size: 18px; margin: 10px;">
+                                Оформить заказ
+                            </button>
+                            <div style="margin-top: 15px;">
+                                <a href="catalog.html" style="color: #e74c3c; text-decoration: none;">Продолжить покупки</a>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Обработчики удаления товаров
+                    document.querySelectorAll('.cart-item-remove').forEach(btn => {
+                        btn.addEventListener('click', async function() {
+                            const itemId = parseInt(this.closest('.cart-item').dataset.id);
+                            await removeCartItem(itemId);
+                            await loadCart(); // Перезагружаем корзину
+                        });
+                    });
+                    
+                } catch (error) {
+                    console.error('Error loading cart:', error);
+                    // Не показываем ошибку, если это 401 - мы уже перенаправили
+                    if (!error.message.includes('401')) {
+                        document.getElementById('cartContainer').innerHTML = `
+                            <div class="error-message">
+                                Ошибка при загрузке корзины: ${error.message}
+                            </div>
+                        `;
+                    }
+                }
+            }
+            
+            async function removeCartItem(itemId) {
+                try {
+                    await authApiRequest(`/api/cart/${itemId}`, {
+                        method: 'DELETE'
+                    });
+                } catch (error) {
+                    console.error('Error:', error);
+                    if (!error.message.includes('401')) {
+                        alert('Ошибка удаления товара: ' + error.message);
+                    }
+                }
+            }
+            
+            // Первоначальная загрузка корзины
+            await loadCart();
+            
+            // Выход из системы
+            authLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                window.location.href = 'index.html';
+            });
+        });
+    </script>
+</body>
+</html>

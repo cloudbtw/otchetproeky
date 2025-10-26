@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мой аккаунт | Sneakers Shop</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #e74c3c;
+            text-decoration: none;
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 20px;
+        }
+        
+        nav a {
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        nav a:hover {
+            color: #e74c3c;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .auth-link, .cart-link {
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .auth-link:hover, .cart-link:hover {
+            color: #e74c3c;
+        }
+        
+        .account-section {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .account-balance {
+            font-size: 24px;
+            font-weight: bold;
+            color: #e74c3c;
+            margin: 20px 0;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        
+        .btn-primary {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #c0392b;
+        }
+        
+        .account-info {
+            margin-bottom: 20px;
+        }
+        
+        .account-info p {
+            margin-bottom: 5px;
+        }
+        
+        .account-info strong {
+            display: inline-block;
+            width: 120px;
+        }
+        
+        .error-message {
+            color: #e74c3c;
+            text-align: center;
+            padding: 20px;
+            background-color: #ffeaea;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-inner">
+                <a href="index.html" class="logo">SNEAKERS</a>
+                <nav>
+                    <ul>
+                        <li><a href="catalog.html">Каталог</a></li>
+                        <li><a href="about.html">О нас</a></li>
+                        <li><a href="contacts.html">Контакты</a></li>
+                    </ul>
+                </nav>
+                <div class="header-actions">
+                    <a href="login.html" class="auth-link" id="authLink">Войти</a>
+                    <a href="cart.html" class="cart-link">Корзина (<span id="cartCount">0</span>)</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="account-section">
+                <h1>Мой аккаунт</h1>
+                <div class="account-info" id="userInfo">
+                    <!-- Информация о пользователе будет загружена через JS -->
+                </div>
+                <div class="account-balance" id="userBalance">
+                    <!-- Баланс будет загружен через JS -->
+                </div>
+                <button id="topUpBalance" class="btn btn-primary">Пополнить баланс</button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const API_BASE_URL = 'https://localhost:7154';
+
+        // Универсальная функция для API запросов
+        async function apiRequest(url, options = {}) {
+            try {
+                const response = await fetch(`${API_BASE_URL}${url}`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error('API Request failed:', error);
+                throw error;
+            }
+        }
+
+        // Функция для авторизованных запросов
+        async function authApiRequest(url, options = {}) {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                throw new Error('No authentication token');
+            }
+            
+            return await apiRequest(url, {
+                ...options,
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    ...options.headers
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            const token = localStorage.getItem('token');
+            const authLink = document.getElementById('authLink');
+            
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Загрузка информации о пользователе
+            try {
+                const user = JSON.parse(localStorage.getItem('user'));
+                document.getElementById('userInfo').innerHTML = `
+                    <p><strong>Имя:</strong> ${user.name}</p>
+                    <p><strong>Email:</strong> ${user.email}</p>
+                    <p><strong>Роль:</strong> ${user.role === 'Worker' ? 'Работник' : 'Пользователь'}</p>
+                `;
+                document.getElementById('userBalance').textContent = `Баланс: ${user.balance.toLocaleString()} ₽`;
+                authLink.textContent = user.name;
+                authLink.href = '#';
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('userInfo').innerHTML = '<div class="error-message">Ошибка загрузки данных пользователя</div>';
+            }
+
+            // Пополнение баланса
+            document.getElementById('topUpBalance').addEventListener('click', async function() {
+                const amount = parseFloat(prompt('Введите сумму для пополнения:'));
+                if (isNaN(amount) || amount <= 0) {
+                    alert('Введите корректную сумму');
+                    return;
+                }
+                
+                try {
+                    const result = await authApiRequest('/api/account/topup', {
+                        method: 'POST',
+                        body: JSON.stringify(amount)
+                    });
+                    
+                    document.getElementById('userBalance').textContent = `Баланс: ${result.balance.toLocaleString()} ₽`;
+                    
+                    // Обновляем данные пользователя в localStorage
+                    const user = JSON.parse(localStorage.getItem('user'));
+                    user.balance = result.balance;
+                    localStorage.setItem('user', JSON.stringify(user));
+                    
+                    alert('Баланс успешно пополнен!');
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Ошибка при пополнении баланса: ' + error.message);
+                }
+            });
+
+            // Выход из системы
+            authLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                window.location.href = 'index.html';
+            });
+
+            // Загрузка количества товаров в корзине
+            try {
+                const cart = await authApiRequest('/api/cart');
+                document.getElementById('cartCount').textContent = cart.length;
+            } catch (error) {
+                console.error('Error loading cart:', error);
+                document.getElementById('cartCount').textContent = '0';
+            }
+        });
+    </script>
+</body>
+</html>
